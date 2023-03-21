@@ -150,7 +150,7 @@ NotTWL:
 	ldr	r1, [r0,#16]		@ argv
 	ldr	r0, [r0,#12]		@ argc
 
-	ldr	r3, =main
+	ldr	r3, =cothread_start	@ This starts main as a thread
 	ldr	lr, =__libnds_exit
 	bx	r3			@ jump to user code
 
