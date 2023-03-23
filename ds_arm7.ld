@@ -178,8 +178,19 @@ SECTIONS
 		*(.gnu.linkonce.d*)
 		CONSTRUCTORS
 		. = ALIGN(4);
-		__data_end = ABSOLUTE(.) ;
 	} >iwram AT>ewram
+
+	/* The thread control block must be aligned to at least 8 bytes */
+	.tdata ALIGN(8) :
+	{
+		__tdata_start = ABSOLUTE(.) ;
+		*(.tdata .tdata.* .gnu.linkonce.td.*)
+		. = ALIGN(4) ;
+		__tdata_end = ABSOLUTE(.) ;
+		__data_end = . ;
+	} >iwram AT>ewram
+
+	__tdata_size = __tdata_end - __tdata_start ;
 
 	.bss ALIGN(4) (NOLOAD) :
 	{
@@ -194,6 +205,27 @@ SECTIONS
 		__bss_end__ = ABSOLUTE(.);
 		__end__ = ABSOLUTE(.);
 	} >iwram
+
+	.tls ALIGN(8) (NOLOAD) :
+	{
+		__tls_start = ABSOLUTE(.) ;
+
+		/* Reserve space for .tdata */
+		. = . + __tdata_size;
+		. = ALIGN(4) ;
+
+		/* Allocate all tbss symbols */
+		 __tbss_start = ABSOLUTE(.) ;
+		*(.tbss .tbss.* .gnu.linkonce.tb.*)
+		*(.tcommon)
+		 __tbss_end = ABSOLUTE(.) ;
+
+		 __tls_end = ABSOLUTE(.) ;
+
+		__end__ = ABSOLUTE(.) ;
+	} >iwram
+
+	__tbss_size = __tbss_end - __tbss_start;
 
 	/* Stabs debugging sections.  */
 	.stab 0 : { *(.stab) }
